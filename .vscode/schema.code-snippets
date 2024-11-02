@@ -1,0 +1,27 @@
+{
+  "Schema Model Definition": {
+    "prefix": "tw",
+    "scope": "yaml,tw",
+    "body": [
+      "",
+      "# ${1:Model} Model",
+      "${1:Model}:",
+      "  type: model",
+      "  mappings:",
+      "    id:",
+      "      type: string",
+      "      map: id",
+      "      required: true",
+      "    ${2:fieldName}:",
+      "      type: ${3|string,number,boolean,date|}",
+      "      map: ${4:field_name}",
+      "      required: ${5|true,false|}",
+      "  relationships:",
+      "    ${6:relatedModel}:",
+      "      type: ${7:RelatedModel}",
+      "      map: ${8:model.related}",
+      ""
+    ],
+    "description": "Create a new schema model definition"
+  }
+}

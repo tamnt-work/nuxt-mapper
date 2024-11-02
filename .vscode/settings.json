@@ -1,0 +1,29 @@
+{
+  "eslint.useFlatConfig": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+  },
+  "files.associations": {
+    "*.tw": "yaml"
+  },
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "string.unquoted.plain.out.yaml",
+        "settings": {
+          "foreground": "#da8f33"
+        },
+      },
+      {
+        "scope": [
+          "entity.name.tag.yaml"
+        ],
+        "settings": {
+          "foreground": "#71eb94"  // Blue for property names (id, fullName, etc.)
+        }
+      }
+    ]
+  },
+}
