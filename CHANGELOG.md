@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.2.2
+
+[compare changes](https://github.com/tamnt-work/nuxt-mapper/compare/v1.2.1...v1.2.2)
+
+### 🏡 Chore
+
+- Update README ([7765bbe](https://github.com/tamnt-work/nuxt-mapper/commit/7765bbe))
+- Update README ([825c2b9](https://github.com/tamnt-work/nuxt-mapper/commit/825c2b9))
+
+### ❤️ Contributors
+
+- Tamnt1707 ([@tamnt-work](http://github.com/tamnt-work))
+
 ## v1.2.1
 
 [compare changes](https://github.com/tamnt-work/nuxt-mapper/compare/v1.2.0...v1.2.1)
