@@ -129,6 +129,21 @@ npx tw mapper [options]
 | `-f, --fix` | Auto-fix ESLint issues | `false` |
 | `-s, --schema` | Path to schema file | `./mappers/schema.tw` |
 
+Examples:
+```bash
+# Generate all models
+npx tw mapper
+
+# Generate specific models
+npx tw mapper -m user,post
+
+# Watch mode with auto-fix
+npx tw mapper -w -f
+
+# Custom schema path
+npx tw mapper -s ./custom/path/schema.tw
+```
+
 #### `tw service`
 Generates API service classes for your models.
 
@@ -143,44 +158,17 @@ npx tw service create [options]
 
 Examples:
 ```bash
-# Generate all mappers with watch mode
-npx tw mapper -w
-
-# Generate specific mappers with auto-fix
-npx tw mapper -m User,Post -f
-
-# Generate services
-npx tw service create -n user,post -o ./api/services
-```
-
-This will generate both the model and DTO files for each specified mapper.
-
-#### Generate Services
-
-| Option | Alias | Description | Default | Example |
-|--------|-------|-------------|---------|---------|
-| `--name` | `-n` | Comma-separated list of services to generate | Required | `--name=user,post` |
-| `--output` | `-o` | Output directory for generated files | `./services` | `--output=./api/services` |
-
-```bash
-# Generate a service for a mapper (using alias)
+# Generate a service for a mapper
 npx tw service create -n user
 
-# Generate multiple services at once (using alias)
+# Generate multiple services at once
 npx tw service create -n user,post,comment
 
-# Specify custom output directory (using alias)
+# Specify custom output directory
 npx tw service create -n user -o ./api/services
 ```
 
-This will:
-1. Create a base API service class with common functionality
-2. Generate model-specific services with standard CRUD operations:
-   - `all()`: Get all records
-   - `find(id)`: Get a single record
-   - `create(data)`: Create a new record
-   - `update(id, data)`: Update an existing record
-   - `delete(id)`: Delete a record
+This will generate both the model and DTO files for each specified mapper.
 
 The generated services automatically handle data transformation between DTOs and models.
 
