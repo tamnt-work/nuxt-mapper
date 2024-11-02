@@ -34,8 +34,6 @@ export const dataMapperCommand = defineCommand({
     },
   },
   async run({ args }) {
-    console.log('args', args)
-
     const mappersDir = args.schema ? dirname(args.schema) : './mappers'
     const schemaPath = args.schema || join(mappersDir, 'schema.tw')
     const modelNames = args.models?.split(',')
