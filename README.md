@@ -113,7 +113,7 @@ Post:
 
 ### 2. CLI Commands
 
-The module provides two commands: `mapper` and `service`.
+The module provides two main commands: `mapper` and `service`.
 
 #### `tw mapper`
 Generates model and DTO files from your schema.
@@ -145,7 +145,25 @@ npx tw mapper -s ./custom/path/schema.tw
 ```
 
 #### `tw service`
-Generates API service classes for your models.
+The service command has two subcommands: `init` and `create`.
+
+##### `tw service init`
+Initializes the service infrastructure by creating:
+- A base API configuration file (`api.ts`)
+- An empty index file for exports (`index.ts`)
+- Automatically updates nuxt.config.ts to include services in auto-imports
+
+
+```bash
+npx tw service init [options]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-o, --output` | Output directory | `./services` |
+
+##### `tw service create`
+Generates service classes for your models.
 
 ```bash
 npx tw service create [options]
@@ -158,19 +176,53 @@ npx tw service create [options]
 
 Examples:
 ```bash
-# Generate a service for a mapper
+# Generate a single service
 npx tw service create -n user
 
 # Generate multiple services at once
 npx tw service create -n user,post,comment
-
-# Specify custom output directory
-npx tw service create -n user -o ./api/services
 ```
 
-This will generate both the model and DTO files for each specified mapper.
+The command generates the following directory structure:
+```
+services/
+├── user/
+│   └── index.ts        # User service implementation
+├── post/
+│   └── index.ts        # Post service implementation
+├── comment/
+│   └── index.ts        # Comment service implementation
+├── api.ts              # Base API configuration
+└── index.ts            # Auto-exports all services
+```
 
-The generated services automatically handle data transformation between DTOs and models.
+Each service follows this structure:
+```typescript
+export class UserService {
+  private api = useApi<UserPlainModel>()
+  private resource = 'users'
+
+  async all(options?: UseFetchOptions<UserPlainModel[]>) {
+    // Fetches and transforms data
+  }
+
+  async find(id: string, options?: UseFetchOptions<UserPlainModel>) {
+    // Fetches and transforms single record
+  }
+
+  async create(dto: UserDTO, options?: UseFetchOptions<UserPlainModel>) {
+    // Creates and transforms new record
+  }
+
+  async update(id: string, dto: UserDTO, options?: UseFetchOptions<UserPlainModel>) {
+    // Updates and transforms existing record
+  }
+
+  async delete(id: string, options?: UseFetchOptions<void>) {
+    // Deletes record
+  }
+}
+```
 
 To ensure your services are properly imported, add the services directory to your Nuxt configuration:
 
@@ -189,26 +241,47 @@ export default defineNuxtConfig({
 })
 ```
 
-### 3. Use Generated Code
+### 3. Using Services
+
+Once you have generated your services, you can use them in your components or pages:
 
 ```typescript
-// Import the generated models and DTOs
-import { UserModel } from '~/mappers/user/user.model'
-import { UserDTO } from '~/mappers/user/user.dto'
+// Access the auto-imported service
+const userService = useUserService()
 
-// Convert DTO to Model
-const userDTO = new UserDTO({
-  id: '1',
+// Fetch all users (returns UserPlainModel[])
+const { data: users } = await userService.all()
+
+// Get single user by ID (returns UserPlainModel)
+const { data: user } = await userService.find('1')
+
+// Create new user (accepts UserDTO, returns UserPlainModel)
+const { data: newUser } = await userService.create(new UserDTO({
   fullName: 'John Doe',
   email: 'john@example.com'
+}))
+
+// Update user (accepts UserDTO, returns UserPlainModel)
+const { data: updatedUser } = await userService.update('1', new UserDTO({
+  fullName: 'John Smith'
+}))
+
+// Delete user
+await userService.delete('1')
+
+// All methods accept UseFetchOptions for customization
+const { data: filteredUsers } = await userService.all({
+  query: {
+    role: 'admin'
+  }
 })
-
-// Convert to model
-const userModel = userDTO.toModel()
-
-// Convert to plain model (without methods)
-const plainModel = userDTO.toPlainModel()
 ```
+
+Each service method automatically handles:
+- API endpoint construction using resource pluralization
+- Data transformation between DTOs and Plain Models
+- Type safety with TypeScript
+- Integration with Nuxt's `useFetch` options
 
 ## Schema Definition
 
