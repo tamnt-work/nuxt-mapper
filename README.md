@@ -111,7 +111,27 @@ Post:
       type: User
 ```
 
-### 2. CLI Commands
+### 2. Mapper Structure
+
+After generating the mappers, your directory structure will look like this:
+```
+mappers/
+├── schema.tw                 # Schema definition file
+├── user/                    # User mapper
+│   ├── user.model.ts       # User Plain Model
+│   └── user.dto.ts         # User DTO with mapping logic
+├── post/                    # Post mapper
+│   ├── post.model.ts       # Post Plain Model
+│   └── post.dto.ts         # Post DTO with mapping logic
+└── 
+```
+
+Each model gets its own directory containing:
+- `[name].model.ts`: Plain Model class used in your frontend
+- `[name].dto.ts`: DTO class with mapping logic to/from backend format
+- The main `index.ts` file is automatically generated to provide convenient exports
+
+### 3. CLI Commands
 
 The module provides two main commands: `mapper` and `service`.
 
