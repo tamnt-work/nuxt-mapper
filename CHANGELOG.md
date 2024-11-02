@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.2.3
+
+[compare changes](https://github.com/tamnt-work/nuxt-mapper/compare/v1.2.2...v1.2.3)
+
+### 🩹 Fixes
+
+- Fix read template ([2f393aa](https://github.com/tamnt-work/nuxt-mapper/commit/2f393aa))
+
+### ❤️ Contributors
+
+- Tamnt1707 ([@tamnt-work](http://github.com/tamnt-work))
+
 ## v1.2.2
 
 [compare changes](https://github.com/tamnt-work/nuxt-mapper/compare/v1.2.1...v1.2.2)
