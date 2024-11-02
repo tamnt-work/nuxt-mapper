@@ -1,0 +1,56 @@
+import type { UseFetchOptions } from '#app'
+import { __PASCAL_CASE__DTO } from '~/mappers/__KEBAB_CASE__/__KEBAB_CASE__.dto'
+import type { __PASCAL_CASE__PlainModel } from '~/mappers/__KEBAB_CASE__/__KEBAB_CASE__.model'
+
+const prefix = '/__PLURALIZE__'
+
+export const use__PASCAL_CASE__Service = () => {
+  return {
+    all: (options: UseFetchOptions<__PASCAL_CASE__PlainModel[]> = {}) => {
+      return useApi<__PASCAL_CASE__PlainModel[]>().get(prefix, {
+        transform: (data: object[]) => {
+          return data.map((__KEBAB_CASE__: object) => new __PASCAL_CASE__DTO(__KEBAB_CASE__).toPlainModel())
+        },
+        ...options,
+      })
+    },
+
+    find: (id: string, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
+      return useApi<__PASCAL_CASE__PlainModel>().get(`${prefix}/${id}`, {
+        transform: (data: object) => {
+          return new __PASCAL_CASE__DTO(data).toPlainModel()
+        },
+        ...options,
+      })
+    },
+
+    create: (data: __PASCAL_CASE__DTO, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
+      return useApi<__PASCAL_CASE__PlainModel>().post(prefix, {
+        body: data,
+        transform: (data: object) => {
+          return new __PASCAL_CASE__DTO(data).toPlainModel()
+        },
+        ...options,
+      })
+    },
+
+    update: (id: string, data: __PASCAL_CASE__DTO, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
+      return useApi<__PASCAL_CASE__PlainModel>().put(`${prefix}/${id}`, {
+        body: data,
+        transform: (data: object) => {
+          return new __PASCAL_CASE__DTO(data).toPlainModel()
+        },
+        ...options,
+      })
+    },
+
+    delete: (id: string, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
+      return useApi<__PASCAL_CASE__PlainModel>().destroy(`${prefix}/${id}`, {
+        transform: (data: object) => {
+          return new __PASCAL_CASE__DTO(data).toPlainModel()
+        },
+        ...options,
+      })
+    },
+  }
+}

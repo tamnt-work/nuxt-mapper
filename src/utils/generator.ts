@@ -34,7 +34,7 @@ interface Schema {
 const runEslintFix = (mappersDir: string) => {
   try {
     consola.info(`Running ESLint fix on ${mappersDir} folder...`)
-    execSync(`eslint --fix ${mappersDir}`, { stdio: 'inherit' })
+    execSync(`npx eslint --fix ${mappersDir}`, { stdio: 'inherit' })
     consola.success('ESLint fix completed successfully')
   }
   catch (error) {

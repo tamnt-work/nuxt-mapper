@@ -1,35 +1,59 @@
 {
-  "name": "@tw/data-mapper",
+  "name": "@tamnt-work/nuxt-mapper",
   "version": "1.0.0",
   "description": "Data mapper and converter between different data formats from backend to frontend use schema for nuxt 3",
-  "repository": "tamnt-work/nuxt-data-mapper",
+  "repository": "tamnt-work/nuxt-mapper",
   "license": "MIT",
+  "keywords": [
+    "nuxt",
+    "nuxt3",
+    "data-mapper",
+    "schema",
+    "converter",
+    "typescript",
+    "vue"
+  ],
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/types.d.ts",
       "import": "./dist/module.mjs",
       "require": "./dist/module.cjs"
-    }
+    },
+    "./dist/templates/*": "./dist/templates/*"
   },
   "main": "./dist/module.cjs",
   "types": "./dist/types.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "dist/templates",
+    "dist/package.json"
   ],
+  "bin": {
+    "tw": "./dist/tw.mjs"
+  },
   "scripts": {
-    "prepack": "nuxt-module-build build",
-    "dev": "nuxi dev playground",
+    "prepack": "npm run build:module && npm run build:cli && npm run post:build",
+    "build:module": "nuxt-module-build build --stub && nuxt-module-build prepare",
+    "build:cli": "tsup --clean=false",
+    "post:build": "node scripts/prepare-dist.js && node scripts/add-shebang.js && node scripts/copy-templates.js",
+    "dev": "tsup src/module.ts src/bin/tw.ts --format cjs,esm --dts --watch --clean=false --assets",
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
     "release": "npm run lint && npm run test && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+    "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
+    "cli": "NODE_ENV=development npx tw"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.13.2"
+    "@nuxt/kit": "^3.13.2",
+    "pluralize": "^8.0.0",
+    "scule": "^1.3.0"
   },
   "devDependencies": {
     "@nuxt/devtools": "^1.6.0",
@@ -38,9 +62,11 @@
     "@nuxt/schema": "^3.13.2",
     "@nuxt/test-utils": "^3.14.4",
     "@types/node": "latest",
+    "@types/pluralize": "^0.0.33",
     "changelogen": "^0.5.7",
     "eslint": "^9.13.0",
     "nuxt": "^3.13.2",
+    "tsup": "^8.3.5",
     "typescript": "latest",
     "vitest": "^2.1.4",
     "vue-tsc": "^2.1.10"

@@ -7,36 +7,257 @@ Find and replace all on all files (CMD+SHIFT+F):
 - Description: My new Nuxt module
 -->
 
-# My Module
+# @tw/nuxt-mapper
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-My new Nuxt module for doing amazing things.
-
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
-<!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
-<!-- - [📖 &nbsp;Documentation](https://example.com) -->
+A powerful data mapper and converter module for Nuxt 3 that helps you transform data between different formats from backend to frontend using schema definitions.
 
 ## Features
 
-<!-- Highlight some of the features your module provide here -->
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
+- 🚀 Schema-driven development
+- 🔄 Automatic model and DTO generation
+- 📝 Type-safe data transformations
+- 🔍 Real-time schema watching
+- 🛠 CLI tools for code generation
+- ⚡️ Hot reload support
 
-## Quick Setup
+## Installation
 
-Install the module to your Nuxt application with one command:
+Add `@tw/nuxt-mapper` dependency to your project:
 
 ```bash
-npx nuxi module add my-module
+# pnpm
+pnpm add @tw/nuxt-mapper
+
+# yarn
+yarn add @tw/nuxt-mapper
+
+# npm
+npm install @tw/nuxt-mapper
+
+# bun
+bun add @tw/nuxt-mapper
 ```
 
-That's it! You can now use My Module in your Nuxt app ✨
+## Setup
 
+Add `@tw/nuxt-mapper` to the `modules` section of your `nuxt.config.ts`:
+
+```ts
+export default defineNuxtConfig({
+  modules: ['@tw/nuxt-mapper'],
+  dataMapper: {
+    // Enable watch mode in development
+    watch: true,
+    // Enable ESLint auto-fix for generated files
+    fixEslint: true,
+    // Custom mappers directory (default: './mappers')
+    mappersDir: './mappers',
+    // Add services directory to auto-imports
+    imports: {
+      dirs: ['services']
+    }
+  }
+})
+```
+
+## Usage
+
+### 1. Define Your Schema
+
+Create a `schema.tw` file in your mappers directory:
+
+```yaml
+# User Model
+User:
+  type: model
+  mappings:
+    id:
+      type: string
+      map: id
+      required: true
+    name:
+      type: string
+      map: fullName
+      required: true
+    email:
+      type: string
+      required: true
+
+# Post Model
+Post:
+  type: model
+  mappings:
+    id:
+      type: string
+      map: id
+      required: true
+    title:
+      type: string
+      required: true
+    content:
+      type: string
+      required: true
+    authorId:
+      type: string
+      map: user_id
+      required: true
+  relationships:
+    author:
+      type: User
+```
+
+### 2. CLI Commands
+
+The module provides two commands: `mapper` and `service`.
+
+#### `tw mapper`
+Generates model and DTO files from your schema.
+
+```bash
+npx tw mapper [options]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-m, --models` | Models to generate (comma-separated) | All models |
+| `-w, --watch` | Watch for schema changes | `false` |
+| `-f, --fix` | Auto-fix ESLint issues | `false` |
+| `-s, --schema` | Path to schema file | `./mappers/schema.tw` |
+
+#### `tw service`
+Generates API service classes for your models.
+
+```bash
+npx tw service create [options]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-n, --name` | Services to generate (comma-separated) | Required |
+| `-o, --output` | Output directory | `./services` |
+
+Examples:
+```bash
+# Generate all mappers with watch mode
+npx tw mapper -w
+
+# Generate specific mappers with auto-fix
+npx tw mapper -m User,Post -f
+
+# Generate services
+npx tw service create -n user,post -o ./api/services
+```
+
+This will generate both the model and DTO files for each specified mapper.
+
+#### Generate Services
+
+| Option | Alias | Description | Default | Example |
+|--------|-------|-------------|---------|---------|
+| `--name` | `-n` | Comma-separated list of services to generate | Required | `--name=user,post` |
+| `--output` | `-o` | Output directory for generated files | `./services` | `--output=./api/services` |
+
+```bash
+# Generate a service for a mapper (using alias)
+npx tw service create -n user
+
+# Generate multiple services at once (using alias)
+npx tw service create -n user,post,comment
+
+# Specify custom output directory (using alias)
+npx tw service create -n user -o ./api/services
+```
+
+This will:
+1. Create a base API service class with common functionality
+2. Generate model-specific services with standard CRUD operations:
+   - `all()`: Get all records
+   - `find(id)`: Get a single record
+   - `create(data)`: Create a new record
+   - `update(id, data)`: Update an existing record
+   - `delete(id)`: Delete a record
+
+The generated services automatically handle data transformation between DTOs and models.
+
+To ensure your services are properly imported, add the services directory to your Nuxt configuration:
+
+```ts
+export default defineNuxtConfig({
+  modules: ['@tw/nuxt-mapper'],
+  dataMapper: {
+    watch: true,
+    fixEslint: true,
+    mappersDir: './mappers',
+    // Add services directory to auto-imports
+    imports: {
+      dirs: ['services']
+    }
+  }
+})
+```
+
+### 3. Use Generated Code
+
+```typescript
+// Import the generated models and DTOs
+import { UserModel } from '~/mappers/user/user.model'
+import { UserDTO } from '~/mappers/user/user.dto'
+
+// Convert DTO to Model
+const userDTO = new UserDTO({
+  id: '1',
+  fullName: 'John Doe',
+  email: 'john@example.com'
+})
+
+// Convert to model
+const userModel = userDTO.toModel()
+
+// Convert to plain model (without methods)
+const plainModel = userDTO.toPlainModel()
+```
+
+## Schema Definition
+
+### Basic Structure
+
+```yaml
+ModelName:
+  type: model
+  mappings:
+    fieldName:
+      type: string|number|boolean|date
+      map: backend_field_name
+      required: true|false
+  relationships:
+    relatedField:
+      type: RelatedModel|RelatedModel[]
+```
+
+### Supported Types
+
+- `string`
+- `number`
+- `boolean`
+- `date`
+
+### Nested Mappings
+
+You can map nested properties using dot notation:
+
+```yaml
+User:
+  type: model
+  mappings:
+    address:
+      type: string
+      map: address.street
+```
 
 ## Contribution
 
