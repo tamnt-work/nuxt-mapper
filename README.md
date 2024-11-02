@@ -7,7 +7,7 @@ Find and replace all on all files (CMD+SHIFT+F):
 - Description: My new Nuxt module
 -->
 
-# @tw/nuxt-mapper
+# @tamnt-work/nuxt-mapper
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -27,29 +27,29 @@ A powerful data mapper and converter module for Nuxt 3 that helps you transform 
 
 ## Installation
 
-Add `@tw/nuxt-mapper` dependency to your project:
+Add `@tamnt-work/nuxt-mapper` dependency to your project:
 
 ```bash
 # pnpm
-pnpm add @tw/nuxt-mapper
+pnpm add @tamnt-work/nuxt-mapper
 
 # yarn
-yarn add @tw/nuxt-mapper
+yarn add @tamnt-work/nuxt-mapper
 
 # npm
-npm install @tw/nuxt-mapper
+npm install @tamnt-work/nuxt-mapper
 
 # bun
-bun add @tw/nuxt-mapper
+bun add @tamnt-work/nuxt-mapper
 ```
 
 ## Setup
 
-Add `@tw/nuxt-mapper` to the `modules` section of your `nuxt.config.ts`:
+Add `@tamnt-work/nuxt-mapper` to the `modules` section of your `nuxt.config.ts`:
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@tw/nuxt-mapper'],
+  modules: ['@tamnt-work/nuxt-mapper'],
   dataMapper: {
     // Enable watch mode in development
     watch: true,
@@ -228,7 +228,7 @@ To ensure your services are properly imported, add the services directory to you
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@tw/nuxt-mapper'],
+  modules: ['@tamnt-work/nuxt-mapper'],
   dataMapper: {
     watch: true,
     fixEslint: true,
@@ -351,6 +351,9 @@ User:
 
 </details>
 
+## Contact
+
+For questions and support, please contact: contact@tamnt.work
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@tamnt-work/nuxt-mapper/latest.svg?style=flat&colorA=020420&colorB=00DC82
