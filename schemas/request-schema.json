@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "patternProperties": {
+    "^[A-Za-z]+$": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(create|update|delete)$": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[A-Za-z]+$": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "required": { "type": "boolean" },
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "number", "boolean", "array", "object"]
+                },
+                "min": { "type": "number" },
+                "max": { "type": "number" },
+                "min_items": { "type": "number" },
+                "max_items": { "type": "number" },
+                "gt": { "type": "number" },
+                "lt": { "type": "number" },
+                "email": { "type": "boolean" },
+                "url": { "type": "boolean" },
+                "positive": { "type": "boolean" },
+                "nullable": { "type": "boolean" },
+                "nonempty": { "type": "boolean" },
+                "multipleOf": { "type": "number" },
+                "regex": { "type": "string" },
+                "messages": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "required": { "type": "string" },
+                    "min": { "type": "string" },
+                    "max": { "type": "string" },
+                    "email": { "type": "string" },
+                    "url": { "type": "string" },
+                    "regex": { "type": "string" },
+                    "gt": { "type": "string" },
+                    "lt": { "type": "string" },
+                    "nonempty": { "type": "string" },
+                    "max_items": { "type": "string" },
+                    "min_items": { "type": "string" }
+                  }
+                },
+                "item": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["object"]
+                    },
+                    "properties": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "$ref": "#/patternProperties/^[A-Za-z]+$/patternProperties/^(create|update|delete)$/patternProperties/^[A-Za-z]+$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

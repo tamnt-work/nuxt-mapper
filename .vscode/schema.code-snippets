@@ -1,7 +1,7 @@
 {
   "Schema Model Definition": {
     "prefix": "tw",
-    "scope": "yaml,tw",
+    "scope": "schema.tw",
     "body": [
       "",
       "# ${1:Model} Model",

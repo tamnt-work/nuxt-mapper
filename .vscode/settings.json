@@ -8,6 +8,10 @@
   "files.associations": {
     "*.tw": "yaml"
   },
+  "yaml.schemas": {
+    "./schemas/request-schema.json": ["**/mappers/request.tw"],
+    "./schemas/schema.json": ["**/mappers/schema.tw"]
+  },
   "editor.tokenColorCustomizations": {
     "textMateRules": [
       {
