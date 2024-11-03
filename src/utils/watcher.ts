@@ -2,18 +2,16 @@ import { readFileSync } from 'node:fs'
 import { watch } from 'chokidar'
 import { consola } from 'consola'
 import { parse } from 'yaml'
-import { createSchemaFileIfNotExist, generateModelAndDTO } from './generator'
+import { createSchemaFileIfNotExist, generateModelAndDTO, generateRequests } from './generator'
 
 export async function setupSchemaWatcher({
   mappersDir,
   schemaPath,
   fixEslint,
-  onSchemaChange,
 }: {
   mappersDir: string
   schemaPath: string
-  fixEslint: boolean
-  onSchemaChange?: (changedModelNames: string[]) => void
+  fixEslint?: boolean
 }) {
   let previousContent: string | undefined
 
@@ -55,20 +53,43 @@ export async function setupSchemaWatcher({
       const changedModelNames = changedModels.map(([name]) => name)
       consola.success(`Regenerating models: ${changedModelNames.join(', ')}`)
 
-      if (onSchemaChange) {
-        onSchemaChange(changedModelNames)
-      }
-      else {
-        generateModelAndDTO({
-          mappersDir,
-          schemaPath: path,
-          fixEslint,
-          modelNames: changedModelNames,
-        })
-      }
+      generateModelAndDTO({
+        mappersDir,
+        schemaPath: path,
+        fixEslint,
+        modelNames: changedModelNames,
+      })
     }
 
     previousContent = content
+  })
+
+  return watcher
+}
+
+export async function setupRequestsWatcher({
+  mappersDir,
+  requestsPath,
+  fixEslint,
+}: {
+  mappersDir: string
+  requestsPath: string
+  fixEslint?: boolean
+}) {
+  const watcher = watch(requestsPath, {
+    ignoreInitial: true,
+    persistent: true,
+    ignored: /(^|[\\/])\../,
+    followSymlinks: true,
+  })
+
+  watcher.on('change', () => {
+    consola.info('Requests file changed, regenerating...')
+    generateRequests({
+      mappersDir,
+      fixEslint,
+      requestsPath,
+    })
   })
 
   return watcher

@@ -1,13 +1,27 @@
 import { join, dirname } from 'node:path'
 import { defineCommand } from 'citty'
 import { consola } from 'consola'
-import { generateModelAndDTO } from '../../utils/generator'
+import { createSchemaFileIfNotExist, generateModelAndDTO } from '../../utils/generator'
 import { setupSchemaWatcher } from '../../utils/watcher'
 
 export const dataMapperCommand = defineCommand({
   meta: {
     name: 'data-mapper',
     description: 'Generate models and DTOs from schema files',
+  },
+  subCommands: {
+    init: defineCommand({
+      meta: {
+        name: 'init',
+        description: 'Initialize schema.tw file',
+      },
+      async run() {
+        const mappersDir = './mappers'
+        consola.info('Initializing schema file...')
+        createSchemaFileIfNotExist(mappersDir)
+        consola.success('Schema file created successfully')
+      },
+    }),
   },
   args: {
     fix: {

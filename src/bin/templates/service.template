@@ -1,6 +1,9 @@
+import { useApi } from '../api'
 import type { UseFetchOptions } from '#app'
 import { __PASCAL_CASE__DTO } from '~/mappers/__KEBAB_CASE__/__KEBAB_CASE__.dto'
 import type { __PASCAL_CASE__PlainModel } from '~/mappers/__KEBAB_CASE__/__KEBAB_CASE__.model'
+import type { Create__PASCAL_CASE__Request } from '~/mappers/__KEBAB_CASE__/requests/create-__KEBAB_CASE__.request'
+import type { Update__PASCAL_CASE__Request } from '~/mappers/__KEBAB_CASE__/requests/update-__KEBAB_CASE__.request'
 
 const prefix = '/__PLURALIZE__'
 
@@ -24,7 +27,7 @@ export const use__PASCAL_CASE__Service = () => {
       })
     },
 
-    create: (data: __PASCAL_CASE__DTO, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
+    create: (data: Create__PASCAL_CASE__Request, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
       return useApi<__PASCAL_CASE__PlainModel>().post(prefix, {
         body: data,
         transform: (data: object) => {
@@ -34,7 +37,7 @@ export const use__PASCAL_CASE__Service = () => {
       })
     },
 
-    update: (id: string, data: __PASCAL_CASE__DTO, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
+    update: (id: string, data: Update__PASCAL_CASE__Request, options: UseFetchOptions<__PASCAL_CASE__PlainModel> = {}) => {
       return useApi<__PASCAL_CASE__PlainModel>().put(`${prefix}/${id}`, {
         body: data,
         transform: (data: object) => {

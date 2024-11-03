@@ -6,5 +6,6 @@ export default defineNuxtConfig({
 
   dataMapper: {
     watch: true,
+    fixEslint: true,
   },
 })
