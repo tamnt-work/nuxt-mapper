@@ -1,6 +1,7 @@
 ﻿import { defineCommand, runMain } from 'citty'
 import { dataMapperCommand } from './commands/mapper'
 import { serviceCommand } from './commands/service'
+import { requestCommand } from './commands/request'
 
 const main = defineCommand({
   meta: {
@@ -11,6 +12,7 @@ const main = defineCommand({
   subCommands: {
     mapper: dataMapperCommand,
     service: serviceCommand,
+    request: requestCommand,
   },
 })
 

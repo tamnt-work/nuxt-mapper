@@ -24,28 +24,28 @@ A powerful data mapper and converter module for Nuxt 3 that helps you transform 
 - 🔍 Real-time schema watching
 - 🛠 CLI tools for code generation
 - ⚡️ Hot reload support
+- ✨ Zod-powered request validation
+- 🌐 i18n support for validation messages
 
 ## Installation
 
-Add `@tamnt-work/nuxt-mapper` dependency to your project:
-
 ```bash
-# pnpm
+# Using package manager of choice
 pnpm add @tamnt-work/nuxt-mapper
-
-# yarn
 yarn add @tamnt-work/nuxt-mapper
-
-# npm
 npm install @tamnt-work/nuxt-mapper
-
-# bun
 bun add @tamnt-work/nuxt-mapper
+
+# Optional: Install zod if using request validation
+pnpm add zod
+yarn add zod
+npm install zod
+bun add zod
 ```
 
 ## Setup
 
-Add `@tamnt-work/nuxt-mapper` to the `modules` section of your `nuxt.config.ts`:
+Add to your `nuxt.config.ts`:
 
 ```ts
 export default defineNuxtConfig({
@@ -67,9 +67,23 @@ export default defineNuxtConfig({
 
 ## Usage
 
-### 1. Define Your Schema
+### 1. Model Schema Definition
 
-Create a `schema.tw` file in your mappers directory:
+First, initialize the schema files using the CLI:
+
+```bash
+# Initialize model schema
+npx tw mapper init
+
+# Initialize request schema
+npx tw request init
+```
+
+This will create the following files:
+- `mappers/schema.tw`: Model schema definition
+- `mappers/request.tw`: Request validation schema
+
+Then modify the schema files according to your needs:
 
 ```yaml
 # User Model
@@ -83,10 +97,16 @@ User:
     name:
       type: string
       map: fullName
-      required: true
     email:
       type: string
       required: true
+    address:
+      type: string
+      map: address.street
+  relationships:
+    posts:
+      type: Post[]
+      map: user.posts
 
 # Post Model
 Post:
@@ -94,62 +114,89 @@ Post:
   mappings:
     id:
       type: string
-      map: id
       required: true
     title:
       type: string
-      required: true
     content:
       type: string
-      required: true
-    authorId:
-      type: string
-      map: user_id
-      required: true
+      map: body
   relationships:
     author:
       type: User
+      map: post.user
 ```
 
-### 2. Mapper Structure
+### 2. Request Validation Schema
 
-After generating the mappers, your directory structure will look like this:
+Create a `request.tw` file for API validation rules:
+
+```yaml
+User:
+  create:
+    fullName:
+      required: true
+      min: 2
+      max: 100
+      messages:
+        required: "Full name is required"
+        min: "Name must be at least {min} characters"
+    
+    email:
+      required: true
+      email: true
+      messages:
+        email: "Please enter a valid email address"
+
+    # Array validation example
+    addresses:
+      type: array
+      item:
+        type: object
+        properties:
+          street:
+            required: true
+            min: 5
+          city:
+            required: true
+      max_items: 3
+      messages:
+        max_items: "Maximum {max} addresses allowed"
+
+  update:
+    id:
+      required: true
+    fullName:
+      min: 2
+      max: 100
+    email:
+      email: true
+```
+
+### 3. Generated Structure
+
+After running the generators, your directory will look like:
+
 ```
 mappers/
-├── schema.tw                 # Schema definition file
-├── user/                    # User mapper
+├── schema.tw                 # Model schema definition
+├── request.tw               # Request validation schema
+├── user/                    
 │   ├── user.model.ts       # User Plain Model
-│   └── user.dto.ts         # User DTO with mapping logic
-├── post/                    # Post mapper
-│   ├── post.model.ts       # Post Plain Model
-│   └── post.dto.ts         # Post DTO with mapping logic
-└── 
+│   ├── user.dto.ts         # User DTO with mapping
+│   └── requests/           # Generated request validators
+│       ├── create-user.request.ts
+│       ├── update-user.request.ts
+│       └── delete-user.request.ts
+└── post/                    
+    ├── post.model.ts       
+    ├── post.dto.ts         
+    └── requests/           
 ```
 
-Each model gets its own directory containing:
-- `[name].model.ts`: Plain Model class used in your frontend
-- `[name].dto.ts`: DTO class with mapping logic to/from backend format
-- The main `index.ts` file is automatically generated to provide convenient exports
+### 4. CLI Commands
 
-### 3. CLI Commands
+#### Generate Models & DTOs
 
-The module provides two main commands: `mapper` and `service`.
-
-#### `tw mapper`
-Generates model and DTO files from your schema.
-
-```bash
-npx tw mapper [options]
-```
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-m, --models` | Models to generate (comma-separated) | All models |
-| `-w, --watch` | Watch for schema changes | `false` |
-| `-f, --fix` | Auto-fix ESLint issues | `false` |
-| `-s, --schema` | Path to schema file | `./mappers/schema.tw` |
-
-Examples:
 ```bash
 # Generate all models
 npx tw mapper
@@ -157,233 +204,191 @@ npx tw mapper
 # Generate specific models
 npx tw mapper -m user,post
 
-# Watch mode with auto-fix
-npx tw mapper -w -f
+# Watch mode
+npx tw mapper -w
 
-# Custom schema path
-npx tw mapper -s ./custom/path/schema.tw
+# Initialize schema
+npx tw mapper init
 ```
 
-#### `tw service`
-The service command has two subcommands: `init` and `create`.
-
-##### `tw service init`
-Initializes the service infrastructure by creating:
-- A base API configuration file (`api.ts`)
-- An empty index file for exports (`index.ts`)
-- Automatically updates nuxt.config.ts to include services in auto-imports
-
-
-```bash
-npx tw service init [options]
-```
-
+Options:
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-o, --output` | Output directory | `./services` |
+| `-m, --models` | Models to generate | All models |
+| `-w, --watch` | Watch for changes | `false` |
+| `-f, --fix` | Auto-fix ESLint | `false` |
+| `-s, --schema` | Schema file path | `./mappers/schema.tw` |
 
-##### `tw service create`
-Generates service classes for your models.
+#### Generate Request Validators
 
 ```bash
-npx tw service create [options]
+# Generate all request validators
+npx tw request
+
+# Generate for specific models
+npx tw request -m user,post
+
+# Watch mode
+npx tw request -w
+
+# Initialize request schema
+npx tw request init
 ```
 
+Options:
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-n, --name` | Services to generate (comma-separated) | Required |
+| `-m, --models` | Models to generate | All models |
+| `-w, --watch` | Watch for changes | `false` |
+| `-f, --fix` | Auto-fix ESLint | `false` |
+| `-s, --schema` | Schema file path | `./mappers/request.tw` |
+
+#### Generate Services
+
+```bash
+# Initialize service infrastructure
+npx tw service init
+
+# Generate services
+npx tw service create -n user,post
+```
+
+Options:
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-n, --name` | Services to generate | Required |
 | `-o, --output` | Output directory | `./services` |
 
-Examples:
-```bash
-# Generate a single service
-npx tw service create -n user
+### 5. Validation Rules Reference
 
-# Generate multiple services at once
-npx tw service create -n user,post,comment
+#### String Validations
+- `required`: boolean
+- `min`: number (min length)
+- `max`: number (max length)
+- `email`: boolean
+- `regex`: string
+- `url`: boolean
+- `uuid`: boolean
+- `cuid`: boolean
+- `length`: number
+- `startsWith`: string
+- `endsWith`: string
+- `includes`: string
+
+#### Number Validations
+- `type: number`
+- `gt`: number (greater than)
+- `gte`: number (greater than or equal)
+- `lt`: number (less than)
+- `lte`: number (less than or equal)
+- `int`: boolean
+- `positive`: boolean
+- `negative`: boolean
+- `multipleOf`: number
+- `finite`: boolean
+- `safe`: boolean
+
+#### Array Validations
+- `type: array`
+- `nonempty`: boolean
+- `min_items`: number
+- `max_items`: number
+- `item`: object (nested validation)
+
+#### Object Validations
+- `type: object`
+- `properties`: Record<string, ValidationRule>
+
+#### Custom Messages
+```yaml
+fieldName:
+  required: true
+  min: 2
+  messages:
+    required: "Custom required message"
+    min: "Must be at least {min} chars"
 ```
 
-The command generates the following directory structure:
-```
-services/
-├── user/
-│   └── index.ts        # User service implementation
-├── post/
-│   └── index.ts        # Post service implementation
-├── comment/
-│   └── index.ts        # Comment service implementation
-├── api.ts              # Base API configuration
-└── index.ts            # Auto-exports all services
+#### i18n Support
+```yaml
+fieldName:
+  required: true
+  i18n:
+    required: "validation.field.required"
 ```
 
-Each service follows this structure:
+### 6. Using Services
+
 ```typescript
-export class UserService {
-  private api = useApi<UserPlainModel>()
-  private resource = 'users'
+// Auto-imported service
+const userService = useUserService()
 
-  async all(options?: UseFetchOptions<UserPlainModel[]>) {
-    // Fetches and transforms data
-  }
+// Create with request validation
+const { data: newUser } = await userService.create({
+  fullName: 'John Doe',
+  email: 'john@example.com'
+} satisfies CreateUserRequest) // Type-safe request validation
 
-  async find(id: string, options?: UseFetchOptions<UserPlainModel>) {
-    // Fetches and transforms single record
-  }
+// Update with request validation
+const { data: updated } = await userService.update('1', {
+  fullName: 'John Smith'
+} satisfies UpdateUserRequest)
 
-  async create(dto: UserDTO, options?: UseFetchOptions<UserPlainModel>) {
-    // Creates and transforms new record
-  }
+// With custom options and request validation
+const { data } = await userService.all({
+  query: { role: 'admin' } satisfies GetUsersRequest
+})
 
-  async update(id: string, dto: UserDTO, options?: UseFetchOptions<UserPlainModel>) {
-    // Updates and transforms existing record
-  }
-
-  async delete(id: string, options?: UseFetchOptions<void>) {
-    // Deletes record
+// Error handling with Zod validation
+try {
+  const { data } = await userService.create({
+    // Invalid data
+    email: 'invalid-email'
+  } satisfies CreateUserRequest)
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    // Type-safe validation errors
+    console.log(error.errors)
   }
 }
 ```
 
-To ensure your services are properly imported, add the services directory to your Nuxt configuration:
+## Contributing
 
-```ts
-export default defineNuxtConfig({
-  modules: ['@tamnt-work/nuxt-mapper'],
-  dataMapper: {
-    watch: true,
-    fixEslint: true,
-    mappersDir: './mappers',
-    // Add services directory to auto-imports
-    imports: {
-      dirs: ['services']
-    }
-  }
-})
+```bash
+# Install dependencies
+npm install
+
+# Generate type stubs
+npm run dev:prepare
+
+# Development
+npm run dev
+
+# Build
+npm run dev:build
+
+# Run ESLint
+npm run lint
+
+# Run Tests
+npm run test
+npm run test:watch
+
+# Release
+npm run release
 ```
 
-### 3. Using Services
+## License
 
-Once you have generated your services, you can use them in your components or pages:
-
-```typescript
-// Access the auto-imported service
-const userService = useUserService()
-
-// Fetch all users (returns UserPlainModel[])
-const { data: users } = await userService.all()
-
-// Get single user by ID (returns UserPlainModel)
-const { data: user } = await userService.find('1')
-
-// Create new user (accepts UserDTO, returns UserPlainModel)
-const { data: newUser } = await userService.create(new UserDTO({
-  fullName: 'John Doe',
-  email: 'john@example.com'
-}))
-
-// Update user (accepts UserDTO, returns UserPlainModel)
-const { data: updatedUser } = await userService.update('1', new UserDTO({
-  fullName: 'John Smith'
-}))
-
-// Delete user
-await userService.delete('1')
-
-// All methods accept UseFetchOptions for customization
-const { data: filteredUsers } = await userService.all({
-  query: {
-    role: 'admin'
-  }
-})
-```
-
-Each service method automatically handles:
-- API endpoint construction using resource pluralization
-- Data transformation between DTOs and Plain Models
-- Type safety with TypeScript
-- Integration with Nuxt's `useFetch` options
-
-## Schema Definition
-
-### Basic Structure
-
-```yaml
-ModelName:
-  type: model
-  mappings:
-    fieldName:
-      type: string|number|boolean|date
-      map: backend_field_name
-      required: true|false
-  relationships:
-    relatedField:
-      type: RelatedModel|RelatedModel[]
-```
-
-### Supported Types
-
-- `string`
-- `number`
-- `boolean`
-- `date`
-
-### Nested Mappings
-
-You can map nested properties using dot notation:
-
-```yaml
-User:
-  type: model
-  mappings:
-    address:
-      type: string
-      map: address.street
-```
-
-## Contribution
-
-<details>
-  <summary>Local development</summary>
-  
-  ```bash
-  # Install dependencies
-  npm install
-  
-  # Generate type stubs
-  npm run dev:prepare
-  
-  # Develop with the playground
-  npm run dev
-  
-  # Build the playground
-  npm run dev:build
-  
-  # Run ESLint
-  npm run lint
-  
-  # Run Vitest
-  npm run test
-  npm run test:watch
-  
-  # Release new version
-  npm run release
-  ```
-
-</details>
-
-## Contact
-
-For questions and support, please contact: contact@tamnt.work
+[MIT License](./LICENSE)
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@tamnt-work/nuxt-mapper/latest.svg?style=flat&colorA=020420&colorB=00DC82
 [npm-version-href]: https://npmjs.com/package/@tamnt-work/nuxt-mapper
-
 [npm-downloads-src]: https://img.shields.io/npm/dm/@tamnt-work/nuxt-mapper.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npm.chart.dev/@tamnt-work/nuxt-mapper
-
+[npm-downloads-href]: https://npmjs.com/package/@tamnt-work/nuxt-mapper
 [license-src]: https://img.shields.io/npm/l/@tamnt-work/nuxt-mapper.svg?style=flat&colorA=020420&colorB=00DC82
 [license-href]: https://npmjs.com/package/@tamnt-work/nuxt-mapper
-
 [nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt.js
 [nuxt-href]: https://nuxt.com

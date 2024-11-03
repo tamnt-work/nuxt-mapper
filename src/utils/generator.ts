@@ -31,10 +31,86 @@ interface Schema {
   [key: string]: SchemaModel
 }
 
-const runEslintFix = (mappersDir: string) => {
+interface ValidationRule {
+  required?: boolean
+  min?: number
+  max?: number
+  email?: boolean
+  regex?: string
+  type?: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object'
+  nullable?: boolean
+  url?: boolean
+  uuid?: boolean
+  cuid?: boolean
+  includes?: string
+  startsWith?: string
+  endsWith?: string
+  length?: number
+  gt?: number
+  gte?: number
+  lt?: number
+  lte?: number
+  int?: boolean
+  positive?: boolean
+  negative?: boolean
+  multipleOf?: number
+  finite?: boolean
+  safe?: boolean
+  nonempty?: boolean
+  min_items?: number
+  max_items?: number
+  custom?: string
+  messages?: {
+    required?: string
+    min?: string
+    max?: string
+    email?: string
+    regex?: string
+    url?: string
+    uuid?: string
+    cuid?: string
+    includes?: string
+    startsWith?: string
+    endsWith?: string
+    length?: string
+    gt?: string
+    gte?: string
+    lt?: string
+    lte?: string
+    int?: string
+    positive?: string
+    negative?: string
+    multipleOf?: string
+    finite?: string
+    safe?: string
+    nonempty?: string
+    min_items?: string
+    max_items?: string
+    type?: string
+    [key: string]: string | undefined
+  }
+  i18n?: {
+    [key: string]: string | undefined
+  }
+  item?: {
+    type: string
+    properties?: Record<string, ValidationRule>
+  }
+  properties?: Record<string, ValidationRule>
+}
+
+interface Requests {
+  [model: string]: ModelRequest
+}
+
+interface ModelRequest {
+  [action: string]: Record<string, ValidationRule>
+}
+
+export const runEslintFix = (mappersDir: string) => {
   try {
     consola.info(`Running ESLint fix on ${mappersDir} folder...`)
-    execSync(`npx eslint --fix ${mappersDir}`, { stdio: 'inherit' })
+    execSync(`npx eslint --fix "${mappersDir}/**/*.ts"`, { stdio: 'inherit' })
     consola.success('ESLint fix completed successfully')
   }
   catch (error) {
@@ -82,13 +158,16 @@ export function generateModelAndDTO({
   modelNames?: string[]
 }) {
   try {
-    createSchemaFileIfNotExist(mappersDir)
+    if (!existsSync(schemaPath)) {
+      consola.error(`Schema file not found at ${schemaPath}. Run 'npx tw mapper init' to create it.`)
+      return
+    }
 
     const content = readFileSync(schemaPath, 'utf8')
     const schema: Schema = parse(content)
 
     if (!schema || typeof schema !== 'object') {
-      consola.warn(`Please check the ${mappersDir}/schema.tw file, and define your models.`)
+      consola.warn(`Please check the ${schemaPath} file, and define your models.`)
       return
     }
 
@@ -348,4 +427,402 @@ function mapRelationType(type: string): string {
 function generateNestedField(parts: string[], type: string, required: boolean | undefined): string {
   const lastPart = parts[parts.length - 1]
   return `${parts[0]}${required ? '!' : '?'}: { ${lastPart}: ${mapType(type)} }`
+}
+
+export function createRequestFileIfNotExist(mappersDir: string) {
+  mkdirSync(mappersDir, { recursive: true })
+  const requestPath = join(mappersDir, 'request.tw')
+  if (!existsSync(requestPath)) {
+    consola.info(`Creating ${requestPath}`)
+    const requestContent = `# =============================================================================
+# Request Schema Definition File
+# =============================================================================
+#
+# This file defines the validation rules for API requests.
+# Each model can have multiple actions with their own validation rules.
+#
+# Structure:
+# ModelName:
+#   actionName:
+#     fieldName:
+#       required: boolean
+#       min: number
+#       max: number
+#       email: boolean
+#       regex: string
+#       messages:
+#         required: string
+#         min: string
+#         max: string
+#         email: string
+#         regex: string
+#       i18n:
+#         required: string
+#         min: string
+#         max: string
+#         email: string
+#         regex: string
+#
+# Example:
+# User:
+#   create:
+#     email:
+#       required: true
+#       email: true
+#       messages:
+#         required: "Email is required"
+#         email: "Invalid email format"
+# =============================================================================
+
+# Add your request validations here
+`
+    writeFileSync(requestPath, requestContent)
+    consola.info(`Created ${requestPath}`)
+  }
+}
+
+export function generateRequests({
+  mappersDir,
+  requestsPath,
+  fixEslint,
+  modelNames,
+}: {
+  mappersDir: string
+  requestsPath: string
+  fixEslint?: boolean
+  modelNames?: string[]
+}) {
+  try {
+    if (!existsSync(requestsPath)) {
+      consola.error(`Requests file not found at ${requestsPath}. Run 'npx tw request init' to create it.`)
+      return
+    }
+
+    const content = readFileSync(requestsPath, 'utf8')
+    const requests: Requests = parse(content)
+
+    if (!requests || typeof requests !== 'object') {
+      consola.warn(`Please check the ${requestsPath} file, and define your requests.`)
+      return
+    }
+
+    const requestsToProcess = modelNames
+      ? Object.entries(requests).filter(([name]) => modelNames.includes(name))
+      : Object.entries(requests)
+
+    if (requestsToProcess.length === 0) {
+      consola.warn('No requests found to process')
+      return
+    }
+
+    requestsToProcess.forEach(([modelName, modelRequests]) => {
+      const kebabCaseName = modelName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+      const modelDir = join(mappersDir, kebabCaseName)
+      const requestsDir = join(modelDir, 'requests')
+      mkdirSync(requestsDir, { recursive: true })
+
+      const existingFiles = existsSync(requestsDir)
+        ? readdirSync(requestsDir).filter(file => file.endsWith('.request.ts'))
+        : []
+
+      const createdFiles = new Set<string>()
+      Object.entries(modelRequests).forEach(([action, rules]) => {
+        const fileName = `${action}-${kebabCaseName}.request.ts`
+        generateRequestFile(modelName, action, rules, modelDir)
+        createdFiles.add(fileName)
+      })
+
+      existingFiles.forEach((file) => {
+        if (!createdFiles.has(file)) {
+          const filePath = join(requestsDir, file)
+          rmSync(filePath)
+          consola.info(`Removed request file: ${file}`)
+        }
+      })
+
+      consola.info(`Generated requests for model: ${modelName}`)
+    })
+
+    if (fixEslint)
+      runEslintFix(mappersDir)
+  }
+  catch (error) {
+    consola.error('Error generating requests:', error)
+  }
+}
+
+function generateRequestFile(
+  modelName: string,
+  action: string,
+  rules: Record<string, ValidationRule>,
+  outputDir: string,
+) {
+  const className = capitalizeFirst(modelName)
+  const actionCamelCase = action.charAt(0).toLowerCase() + capitalizeFirst(action).slice(1)
+  const actionPascalCase = capitalizeFirst(action)
+  const kebabFileName = modelName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+
+  // Check if any rule uses i18n
+  const hasI18n = Object.values(rules).some(rule => Object.keys(rule.i18n || {}).length > 0)
+
+  const requestsDir = join(outputDir, 'requests')
+  mkdirSync(requestsDir, { recursive: true })
+
+  const content = `import { z } from 'zod'${hasI18n ? '\nimport { t } from \'@/i18n\'' : ''}
+
+export const ${actionCamelCase}${className}Schema = z.object({
+  ${Object.entries(rules)
+    .map(([field, rule]) => generateZodValidation(field, rule))
+    .join(',\n  ')}
+})
+
+export type ${actionPascalCase}${className}Request = z.infer<typeof ${actionCamelCase}${className}Schema>
+`
+
+  writeFileSync(join(requestsDir, `${action}-${kebabFileName}.request.ts`), content.trim())
+}
+
+function generateZodValidation(field: string, rule: ValidationRule): string {
+  const validations: string[] = []
+
+  // Base type
+  switch (rule.type?.toLowerCase()) {
+    case 'number':
+      validations.push('z.number()')
+      break
+    case 'boolean':
+      validations.push('z.boolean()')
+      break
+    case 'date':
+      validations.push('z.date()')
+      break
+    case 'array': {
+      // Handle array item validation
+      if (rule.item?.type) {
+        const itemSchema = generateArrayItemSchema(rule.item)
+        validations.push(`z.array(${itemSchema})`)
+      }
+      else {
+        validations.push('z.array(z.any())')
+      }
+      break
+    }
+    case 'object':
+      if (rule.properties) {
+        const objectSchema = generateObjectSchema(rule.properties)
+        validations.push(`z.object(${objectSchema})`)
+      }
+      else {
+        validations.push('z.object({})')
+      }
+      break
+    default:
+      validations.push('z.string()')
+  }
+
+  // String specific validations
+  if (!rule.type || rule.type === 'string') {
+    if (rule.min) {
+      const message = getValidationMessage(rule, 'min', { min: rule.min })
+      validations.push(`  .min(${rule.min}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.max) {
+      const message = getValidationMessage(rule, 'max', { max: rule.max })
+      validations.push(`  .max(${rule.max}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.length) {
+      const message = getValidationMessage(rule, 'length', { length: rule.length })
+      validations.push(`  .length(${rule.length}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.email) {
+      const message = getValidationMessage(rule, 'email')
+      validations.push(`  .email(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.url) {
+      const message = getValidationMessage(rule, 'url')
+      validations.push(`  .url(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.uuid) {
+      const message = getValidationMessage(rule, 'uuid')
+      validations.push(`  .uuid(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.cuid) {
+      const message = getValidationMessage(rule, 'cuid')
+      validations.push(`  .cuid(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.includes) {
+      const message = getValidationMessage(rule, 'includes')
+      validations.push(`  .includes('${rule.includes}'${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.startsWith) {
+      const message = getValidationMessage(rule, 'startsWith')
+      validations.push(`  .startsWith('${rule.startsWith}'${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.endsWith) {
+      const message = getValidationMessage(rule, 'endsWith')
+      validations.push(`  .endsWith('${rule.endsWith}'${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.regex) {
+      const message = getValidationMessage(rule, 'regex')
+      const escapedRegex = rule.regex.replace(/\\/g, '\\\\')
+      validations.push(`  .regex(/${escapedRegex}/${message ? `, { message: ${message} }` : ''})`)
+    }
+  }
+
+  // Number specific validations
+  if (rule.type === 'number') {
+    if (rule.gt !== undefined) {
+      const message = getValidationMessage(rule, 'gt', { value: rule.gt })
+      validations.push(`  .gt(${rule.gt}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.gte !== undefined) {
+      const message = getValidationMessage(rule, 'gte', { value: rule.gte })
+      validations.push(`  .gte(${rule.gte}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.lt !== undefined) {
+      const message = getValidationMessage(rule, 'lt', { value: rule.lt })
+      validations.push(`  .lt(${rule.lt}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.lte !== undefined) {
+      const message = getValidationMessage(rule, 'lte', { value: rule.lte })
+      validations.push(`  .lte(${rule.lte}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.int) {
+      const message = getValidationMessage(rule, 'int')
+      validations.push(`  .int(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.positive) {
+      const message = getValidationMessage(rule, 'positive')
+      validations.push(`  .positive(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.negative) {
+      const message = getValidationMessage(rule, 'negative')
+      validations.push(`  .negative(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.multipleOf) {
+      const message = getValidationMessage(rule, 'multipleOf')
+      validations.push(`  .multipleOf(${rule.multipleOf}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.finite) {
+      const message = getValidationMessage(rule, 'finite')
+      validations.push(`  .finite(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.safe) {
+      const message = getValidationMessage(rule, 'safe')
+      validations.push(`  .safe(${message ? `{ message: ${message} }` : ''})`)
+    }
+  }
+
+  // Array specific validations
+  if (rule.type === 'array') {
+    if (rule.nonempty) {
+      const message = getValidationMessage(rule, 'nonempty')
+      validations.push(`  .nonempty(${message ? `{ message: ${message} }` : ''})`)
+    }
+
+    if (rule.min_items) {
+      const message = getValidationMessage(rule, 'min_items', { min: rule.min_items })
+      validations.push(`  .min(${rule.min_items}${message ? `, { message: ${message} }` : ''})`)
+    }
+
+    if (rule.max_items) {
+      const message = getValidationMessage(rule, 'max_items', { max: rule.max_items })
+      validations.push(`  .max(${rule.max_items}${message ? `, { message: ${message} }` : ''})`)
+    }
+  }
+
+  // Custom validation
+  if (rule.custom) {
+    validations.push(`  .refine(${rule.custom})`)
+  }
+
+  // Nullable
+  if (rule.nullable) {
+    validations.push('  .nullable()')
+  }
+
+  // Required/Optional status
+  if (!rule.required) {
+    validations.push('  .optional()')
+  }
+  else {
+    const message = getValidationMessage(rule, 'required')
+    if (rule.type === 'string') {
+      validations.push(`  .min(1${message ? `, { message: ${message} }` : ''})`)
+    }
+  }
+
+  return `${field}: ${validations.join('\n')}`
+}
+
+function getValidationMessage(
+  rule: ValidationRule,
+  key: string,
+  params: Record<string, any> = {},
+): string | undefined {
+  if (rule.i18n?.[key]) {
+    const paramsString = Object.entries(params)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')
+    return `t('${rule.i18n[key]}'${paramsString ? `, { ${paramsString} }` : ''})`
+  }
+
+  if (rule.messages?.[key]) {
+    let message = rule.messages[key] || ''
+    Object.entries(params).forEach(([key, value]) => {
+      message = message.replace(`{${key}}`, value.toString())
+    })
+    return `"${message}"`
+  }
+
+  return undefined
+}
+
+function generateArrayItemSchema(item: { type: string, properties?: Record<string, ValidationRule> }): string {
+  switch (item.type.toLowerCase()) {
+    case 'object':
+      if (item.properties) {
+        return `z.object({
+          ${Object.entries(item.properties)
+            .map(([key, rule]) => `${key}: ${generateZodValidation(key, rule).split(': ')[1]}`)
+            .join(',\n          ')}
+        })`
+      }
+      return 'z.object({})'
+    case 'string':
+      return 'z.string()'
+    case 'number':
+      return 'z.number()'
+    case 'boolean':
+      return 'z.boolean()'
+    default:
+      return 'z.any()'
+  }
+}
+
+function generateObjectSchema(properties: Record<string, ValidationRule>): string {
+  return `{
+    ${Object.entries(properties)
+      .map(([key, rule]) => `${key}: ${generateZodValidation(key, rule).split(': ')[1]}`)
+      .join(',\n    ')}
+  }`
 }
