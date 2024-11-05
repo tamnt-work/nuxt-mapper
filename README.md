@@ -57,6 +57,8 @@ export default defineNuxtConfig({
     fixEslint: true,
     // Custom mappers directory (default: './mappers')
     mappersDir: './mappers',
+    // Custom i18n import path (default: '@/utils/i18n')
+    i18nImportPath: '@/locales/i18n',
     // Add services directory to auto-imports
     imports: {
       dirs: ['services']
@@ -233,6 +235,9 @@ npx tw form generate -m user,post
 
 # Watch mode
 npx tw form generate -w
+
+# Custom i18n import path
+npx tw form generate -i '@/locales/i18n'
 ```
 
 Options:
@@ -242,6 +247,7 @@ Options:
 | `-w, --watch` | Watch for changes | `false` |
 | `-f, --fix` | Auto-fix ESLint | `false` |
 | `-s, --schema` | Schema file path | `./mappers/form.tw` |
+| `-i, --i18nPath` | Custom i18n import path | `@/utils/i18n` |
 
 #### Generate Services
 
