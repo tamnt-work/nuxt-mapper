@@ -1,38 +1,38 @@
 import { join, dirname } from 'node:path'
 import { defineCommand } from 'citty'
 import { consola } from 'consola'
-import { createSchemaFileIfNotExist, generateModelAndDTO } from '../../utils/generator'
-import { setupSchemaWatcher } from '../../utils/watcher'
+import { generateForms, createFormFileIfNotExist } from '../../utils/generator'
+import { setupFormsWatcher } from '../../utils/watcher'
 
-export const dataMapperCommand = defineCommand({
+export const formCommand = defineCommand({
   meta: {
-    name: 'data-mapper',
-    description: 'Generate models and DTOs from schema files',
+    name: 'form',
+    description: 'Generate forms from form schema files',
   },
   subCommands: {
     init: defineCommand({
       meta: {
         name: 'init',
-        description: 'Initialize schema.tw file',
+        description: 'Initialize form.tw file',
       },
       args: {
         schema: {
           type: 'string',
-          description: 'Path to create schema file',
+          description: 'Path to create form schema file',
           alias: 's',
         },
       },
       async run({ args }) {
         const mappersDir = typeof args.schema === 'string' ? dirname(args.schema) : './mappers'
-        consola.info('Initializing schema file...')
-        createSchemaFileIfNotExist(mappersDir)
-        consola.success('Schema file created successfully')
+        consola.info('Initializing form schema file...')
+        createFormFileIfNotExist(mappersDir)
+        consola.success('Form schema file created successfully')
       },
     }),
     generate: defineCommand({
       meta: {
         name: 'generate',
-        description: 'Generate models and DTOs from schema file',
+        description: 'Generate forms from schema file',
       },
       args: {
         fix: {
@@ -43,7 +43,7 @@ export const dataMapperCommand = defineCommand({
         },
         schema: {
           type: 'string',
-          description: 'Path to schema file',
+          description: 'Path to form schema file',
           alias: 's',
         },
         models: {
@@ -53,21 +53,21 @@ export const dataMapperCommand = defineCommand({
         },
         watch: {
           type: 'boolean',
-          description: 'Watch for changes in schema file',
+          description: 'Watch for changes in form schema file',
           default: false,
           alias: 'w',
         },
       },
       async run({ args }) {
         const mappersDir = typeof args.schema === 'string' ? dirname(args.schema) : './mappers'
-        const schemaPath = typeof args.schema === 'string' ? args.schema : join(mappersDir, 'schema.tw')
+        const formsPath = typeof args.schema === 'string' ? args.schema : join(mappersDir, 'form.tw')
         const modelNames = typeof args.models === 'string' ? args.models.split(',') : undefined
 
         try {
-          consola.info('Generating models and DTOs...')
-          await generateModelAndDTO({
+          consola.info('Generating forms...')
+          await generateForms({
             mappersDir,
-            schemaPath,
+            formsPath,
             fixEslint: Boolean(args.fix),
             modelNames,
           })
@@ -75,15 +75,15 @@ export const dataMapperCommand = defineCommand({
 
           if (args.watch) {
             consola.info('Watching for changes...')
-            await setupSchemaWatcher({
+            await setupFormsWatcher({
               mappersDir,
-              schemaPath,
+              formsPath,
               fixEslint: Boolean(args.fix),
             })
           }
         }
         catch (error) {
-          consola.error('Failed to generate models and DTOs:', error)
+          consola.error('Failed to generate forms:', error)
           process.exit(1)
         }
       },

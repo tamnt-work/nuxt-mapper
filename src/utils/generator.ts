@@ -99,11 +99,11 @@ interface ValidationRule {
   properties?: Record<string, ValidationRule>
 }
 
-interface Requests {
-  [model: string]: ModelRequest
+interface Forms {
+  [model: string]: ModelForm
 }
 
-interface ModelRequest {
+interface ModelForm {
   [action: string]: Record<string, ValidationRule>
 }
 
@@ -429,16 +429,16 @@ function generateNestedField(parts: string[], type: string, required: boolean | 
   return `${parts[0]}${required ? '!' : '?'}: { ${lastPart}: ${mapType(type)} }`
 }
 
-export function createRequestFileIfNotExist(mappersDir: string) {
+export function createFormFileIfNotExist(mappersDir: string) {
   mkdirSync(mappersDir, { recursive: true })
-  const requestPath = join(mappersDir, 'request.tw')
-  if (!existsSync(requestPath)) {
-    consola.info(`Creating ${requestPath}`)
-    const requestContent = `# =============================================================================
-# Request Schema Definition File
+  const formPath = join(mappersDir, 'form.tw')
+  if (!existsSync(formPath)) {
+    consola.info(`Creating ${formPath}`)
+    const formContent = `# =============================================================================
+# Form Schema Definition File
 # =============================================================================
 #
-# This file defines the validation rules for API requests.
+# This file defines the validation rules for forms.
 # Each model can have multiple actions with their own validation rules.
 #
 # Structure:
@@ -474,84 +474,84 @@ export function createRequestFileIfNotExist(mappersDir: string) {
 #         email: "Invalid email format"
 # =============================================================================
 
-# Add your request validations here
+# Add your form validations here
 `
-    writeFileSync(requestPath, requestContent)
-    consola.info(`Created ${requestPath}`)
+    writeFileSync(formPath, formContent)
+    consola.info(`Created ${formPath}`)
   }
 }
 
-export function generateRequests({
+export function generateForms({
   mappersDir,
-  requestsPath,
+  formsPath,
   fixEslint,
   modelNames,
 }: {
   mappersDir: string
-  requestsPath: string
+  formsPath: string
   fixEslint?: boolean
   modelNames?: string[]
 }) {
   try {
-    if (!existsSync(requestsPath)) {
-      consola.error(`Requests file not found at ${requestsPath}. Run 'npx tw request init' to create it.`)
+    if (!existsSync(formsPath)) {
+      consola.error(`Forms file not found at ${formsPath}. Run 'npx tw form init' to create it.`)
       return
     }
 
-    const content = readFileSync(requestsPath, 'utf8')
-    const requests: Requests = parse(content)
+    const content = readFileSync(formsPath, 'utf8')
+    const forms: Forms = parse(content)
 
-    if (!requests || typeof requests !== 'object') {
-      consola.warn(`Please check the ${requestsPath} file, and define your requests.`)
+    if (!forms || typeof forms !== 'object') {
+      consola.warn(`Please check the ${formsPath} file, and define your forms.`)
       return
     }
 
-    const requestsToProcess = modelNames
-      ? Object.entries(requests).filter(([name]) => modelNames.includes(name))
-      : Object.entries(requests)
+    const formsToProcess = modelNames
+      ? Object.entries(forms).filter(([name]) => modelNames.includes(name))
+      : Object.entries(forms)
 
-    if (requestsToProcess.length === 0) {
-      consola.warn('No requests found to process')
+    if (formsToProcess.length === 0) {
+      consola.warn('No forms found to process')
       return
     }
 
-    requestsToProcess.forEach(([modelName, modelRequests]) => {
+    formsToProcess.forEach(([modelName, modelForms]) => {
       const kebabCaseName = modelName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
       const modelDir = join(mappersDir, kebabCaseName)
-      const requestsDir = join(modelDir, 'requests')
-      mkdirSync(requestsDir, { recursive: true })
+      const formsDir = join(modelDir, 'forms')
+      mkdirSync(formsDir, { recursive: true })
 
-      const existingFiles = existsSync(requestsDir)
-        ? readdirSync(requestsDir).filter(file => file.endsWith('.request.ts'))
+      const existingFiles = existsSync(formsDir)
+        ? readdirSync(formsDir).filter(file => file.endsWith('.form.ts'))
         : []
 
       const createdFiles = new Set<string>()
-      Object.entries(modelRequests).forEach(([action, rules]) => {
-        const fileName = `${action}-${kebabCaseName}.request.ts`
-        generateRequestFile(modelName, action, rules, modelDir)
+      Object.entries(modelForms).forEach(([action, rules]) => {
+        const fileName = `${action}-${kebabCaseName}.form.ts`
+        generateFormFile(modelName, action, rules, modelDir)
         createdFiles.add(fileName)
       })
 
       existingFiles.forEach((file) => {
         if (!createdFiles.has(file)) {
-          const filePath = join(requestsDir, file)
+          const filePath = join(formsDir, file)
           rmSync(filePath)
-          consola.info(`Removed request file: ${file}`)
+          consola.info(`Removed form file: ${file}`)
         }
       })
 
-      consola.info(`Generated requests for model: ${modelName}`)
+      consola.info(`Generated forms for model: ${modelName}`)
     })
 
     if (fixEslint)
       runEslintFix(mappersDir)
   }
   catch (error) {
-    consola.error('Error generating requests:', error)
+    consola.error('Error generating forms:', error)
   }
 }
 
-function generateRequestFile(
+function generateFormFile(
   modelName: string,
   action: string,
   rules: Record<string, ValidationRule>,
@@ -562,11 +562,10 @@ function generateRequestFile(
   const actionPascalCase = capitalizeFirst(action)
   const kebabFileName = modelName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
 
-  // Check if any rule uses i18n
   const hasI18n = Object.values(rules).some(rule => Object.keys(rule.i18n || {}).length > 0)
 
-  const requestsDir = join(outputDir, 'requests')
-  mkdirSync(requestsDir, { recursive: true })
+  const formsDir = join(outputDir, 'forms')
+  mkdirSync(formsDir, { recursive: true })
 
   const content = `import { z } from 'zod'${hasI18n ? '\nimport { t } from \'@/i18n\'' : ''}
 
@@ -576,10 +575,10 @@ export const ${actionCamelCase}${className}Schema = z.object({
     .join(',\n  ')}
 })
 
-export type ${actionPascalCase}${className}Request = z.infer<typeof ${actionCamelCase}${className}Schema>
+export type ${actionPascalCase}${className}Form = z.infer<typeof ${actionCamelCase}${className}Schema>
 `
 
-  writeFileSync(join(requestsDir, `${action}-${kebabFileName}.request.ts`), content.trim())
+  writeFileSync(join(formsDir, `${action}-${kebabFileName}.form.ts`), content.trim())
 }
 
 function generateZodValidation(field: string, rule: ValidationRule): string {
