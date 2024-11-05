@@ -75,13 +75,13 @@ First, initialize the schema files using the CLI:
 # Initialize model schema
 npx tw mapper init
 
-# Initialize request schema
-npx tw request init
+# Initialize form schema
+npx tw form init
 ```
 
 This will create the following files:
 - `mappers/schema.tw`: Model schema definition
-- `mappers/request.tw`: Request validation schema
+- `mappers/form.tw`: Form validation schema
 
 Then modify the schema files according to your needs:
 
@@ -126,9 +126,9 @@ Post:
       map: post.user
 ```
 
-### 2. Request Validation Schema
+### 2. Form Validation Schema
 
-Create a `request.tw` file for API validation rules:
+Create a `form.tw` file for API validation rules:
 
 ```yaml
 User:
@@ -179,7 +179,7 @@ After running the generators, your directory will look like:
 ```
 mappers/
 ├── schema.tw                 # Model schema definition
-├── request.tw               # Request validation schema
+├── form.tw                  # Form validation schema
 ├── user/                    
 │   ├── user.model.ts       # User Plain Model
 │   ├── user.dto.ts         # User DTO with mapping
@@ -198,17 +198,17 @@ mappers/
 #### Generate Models & DTOs
 
 ```bash
-# Generate all models
-npx tw mapper
-
-# Generate specific models
-npx tw mapper -m user,post
-
-# Watch mode
-npx tw mapper -w
-
 # Initialize schema
 npx tw mapper init
+
+# Generate all models
+npx tw mapper generate
+
+# Generate specific models
+npx tw mapper generate -m user,post
+
+# Watch mode
+npx tw mapper generate -w
 ```
 
 Options:
@@ -219,20 +219,20 @@ Options:
 | `-f, --fix` | Auto-fix ESLint | `false` |
 | `-s, --schema` | Schema file path | `./mappers/schema.tw` |
 
-#### Generate Request Validators
+#### Generate Form Validators
 
 ```bash
-# Generate all request validators
-npx tw request
+# Initialize form schema
+npx tw form init
+
+# Generate all form validators
+npx tw form generate
 
 # Generate for specific models
-npx tw request -m user,post
+npx tw form generate -m user,post
 
 # Watch mode
-npx tw request -w
-
-# Initialize request schema
-npx tw request init
+npx tw form generate -w
 ```
 
 Options:
@@ -241,7 +241,7 @@ Options:
 | `-m, --models` | Models to generate | All models |
 | `-w, --watch` | Watch for changes | `false` |
 | `-f, --fix` | Auto-fix ESLint | `false` |
-| `-s, --schema` | Schema file path | `./mappers/request.tw` |
+| `-s, --schema` | Schema file path | `./mappers/form.tw` |
 
 #### Generate Services
 

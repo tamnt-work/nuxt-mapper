@@ -2,15 +2,15 @@
 import { join } from 'node:path'
 import { defineNuxtModule } from '@nuxt/kit'
 import { consola } from 'consola'
-import { generateModelAndDTO, generateRequests } from './utils/generator'
-import { setupRequestsWatcher, setupSchemaWatcher } from './utils/watcher'
+import { generateModelAndDTO, generateForms } from './utils/generator'
+import { setupFormsWatcher, setupSchemaWatcher } from './utils/watcher'
 
 // Module options TypeScript interface definition
 export interface ModuleOptions {
   fixEslint: boolean
   watch: boolean
   mappersDir: string
-  requestsPath?: string
+  formsPath?: string
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -27,14 +27,14 @@ export default defineNuxtModule<ModuleOptions>({
     mappersDir: './mappers',
     fixEslint: false,
     watch: false,
-    requestsPath: './mappers/request.tw',
+    formsPath: './mappers/form.tw',
   },
 
   setup(options, nuxt) {
     const mappersDir = join(nuxt.options.rootDir, options.mappersDir)
     const schemaName = 'schema.tw'
     const schemasPath = join(mappersDir, schemaName)
-    const requestsPath = join(nuxt.options.rootDir, options.requestsPath!)
+    const formsPath = join(nuxt.options.rootDir, options.formsPath!)
 
     if (!existsSync(mappersDir)) {
       consola.warn(`Mappers directory not found at ${mappersDir}. Run 'npx tw mapper init' to initialize.`)
@@ -51,11 +51,11 @@ export default defineNuxtModule<ModuleOptions>({
           fixEslint: options.fixEslint,
         })
 
-        if (existsSync(requestsPath)) {
-          consola.info('Generating requests from module hook...')
-          generateRequests({
+        if (existsSync(formsPath)) {
+          consola.info('Generating forms from module hook...')
+          generateForms({
             mappersDir,
-            requestsPath,
+            formsPath,
             fixEslint: options.fixEslint,
           })
         }
@@ -71,9 +71,9 @@ export default defineNuxtModule<ModuleOptions>({
         fixEslint: options.fixEslint,
       })
 
-      setupRequestsWatcher({
+      setupFormsWatcher({
         mappersDir,
-        requestsPath,
+        formsPath,
         fixEslint: options.fixEslint,
       })
     }
