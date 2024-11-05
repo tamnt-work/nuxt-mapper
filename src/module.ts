@@ -11,6 +11,7 @@ export interface ModuleOptions {
   watch: boolean
   mappersDir: string
   formsPath?: string
+  i18nImportPath?: string
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -28,6 +29,7 @@ export default defineNuxtModule<ModuleOptions>({
     fixEslint: false,
     watch: false,
     formsPath: './mappers/form.tw',
+    i18nImportPath: '@/utils/i18n',
   },
 
   setup(options, nuxt) {

@@ -57,6 +57,11 @@ export const formCommand = defineCommand({
           default: false,
           alias: 'w',
         },
+        i18nPath: {
+          type: 'string',
+          description: 'Custom import path for i18n',
+          alias: 'i',
+        },
       },
       async run({ args }) {
         const mappersDir = typeof args.schema === 'string' ? dirname(args.schema) : './mappers'
@@ -70,6 +75,7 @@ export const formCommand = defineCommand({
             formsPath,
             fixEslint: Boolean(args.fix),
             modelNames,
+            i18nImportPath: typeof args.i18nPath === 'string' ? args.i18nPath : undefined,
           })
           consola.success('Generation complete')
 

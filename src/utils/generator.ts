@@ -486,11 +486,13 @@ export function generateForms({
   formsPath,
   fixEslint,
   modelNames,
+  i18nImportPath,
 }: {
   mappersDir: string
   formsPath: string
   fixEslint?: boolean
   modelNames?: string[]
+  i18nImportPath?: string
 }) {
   try {
     if (!existsSync(formsPath)) {
@@ -528,7 +530,7 @@ export function generateForms({
       const createdFiles = new Set<string>()
       Object.entries(modelForms).forEach(([action, rules]) => {
         const fileName = `${action}-${kebabCaseName}.form.ts`
-        generateFormFile(modelName, action, rules, modelDir)
+        generateFormFile(modelName, action, rules, modelDir, i18nImportPath)
         createdFiles.add(fileName)
       })
 
@@ -556,6 +558,7 @@ function generateFormFile(
   action: string,
   rules: Record<string, ValidationRule>,
   outputDir: string,
+  i18nImportPath: string = '@/utils/i18n',
 ) {
   const className = capitalizeFirst(modelName)
   const actionCamelCase = action.charAt(0).toLowerCase() + capitalizeFirst(action).slice(1)
@@ -567,7 +570,7 @@ function generateFormFile(
   const formsDir = join(outputDir, 'forms')
   mkdirSync(formsDir, { recursive: true })
 
-  const content = `import { z } from 'zod'${hasI18n ? '\nimport { t } from \'@/i18n\'' : ''}
+  const content = `import { z } from 'zod'${hasI18n ? `\nimport { t } from '${i18nImportPath}'` : ''}
 
 export const ${actionCamelCase}${className}Schema = z.object({
   ${Object.entries(rules)
