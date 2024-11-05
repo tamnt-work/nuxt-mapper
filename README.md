@@ -50,6 +50,10 @@ Add to your `nuxt.config.ts`:
 ```ts
 export default defineNuxtConfig({
   modules: ['@tamnt-work/nuxt-mapper'],
+  // Add services directory to auto-imports
+  imports: {
+    dirs: ['services']
+  }
   dataMapper: {
     // Enable watch mode in development
     watch: true,
@@ -59,10 +63,6 @@ export default defineNuxtConfig({
     mappersDir: './mappers',
     // Custom i18n import path (default: '@/utils/i18n')
     i18nImportPath: '@/locales/i18n',
-    // Add services directory to auto-imports
-    imports: {
-      dirs: ['services']
-    }
   }
 })
 ```
