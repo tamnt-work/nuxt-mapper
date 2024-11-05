@@ -24,7 +24,7 @@ A powerful data mapper and converter module for Nuxt 3 that helps you transform 
 - 🔍 Real-time schema watching
 - 🛠 CLI tools for code generation
 - ⚡️ Hot reload support
-- ✨ Zod-powered request validation
+- ✨ Zod-powered form validation
 - 🌐 i18n support for validation messages
 
 ## Installation
@@ -36,7 +36,7 @@ yarn add @tamnt-work/nuxt-mapper
 npm install @tamnt-work/nuxt-mapper
 bun add @tamnt-work/nuxt-mapper
 
-# Optional: Install zod if using request validation
+# Optional: Install zod if using form validation
 pnpm add zod
 yarn add zod
 npm install zod
