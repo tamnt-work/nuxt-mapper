@@ -183,14 +183,14 @@ mappers/
 ├── user/                    
 │   ├── user.model.ts       # User Plain Model
 │   ├── user.dto.ts         # User DTO with mapping
-│   └── requests/           # Generated request validators
-│       ├── create-user.request.ts
-│       ├── update-user.request.ts
-│       └── delete-user.request.ts
+│   └── forms/              # Generated form validators
+│       ├── create-user.form.ts
+│       ├── update-user.form.ts
+│       └── delete-user.form.ts
 └── post/                    
     ├── post.model.ts       
     ├── post.dto.ts         
-    └── requests/           
+    └── forms/           
 ```
 
 ### 4. CLI Commands
@@ -323,20 +323,20 @@ fieldName:
 // Auto-imported service
 const userService = useUserService()
 
-// Create with request validation
+// Create with form validation
 const { data: newUser } = await userService.create({
   fullName: 'John Doe',
   email: 'john@example.com'
-} satisfies CreateUserRequest) // Type-safe request validation
+} satisfies CreateUserForm) // Type-safe form validation
 
-// Update with request validation
+// Update with form validation
 const { data: updated } = await userService.update('1', {
   fullName: 'John Smith'
-} satisfies UpdateUserRequest)
+} satisfies UpdateUserForm)
 
-// With custom options and request validation
+// With custom options and form validation
 const { data } = await userService.all({
-  query: { role: 'admin' } satisfies GetUsersRequest
+  query: { role: 'admin' } satisfies GetUsersForm
 })
 
 // Error handling with Zod validation
@@ -344,7 +344,7 @@ try {
   const { data } = await userService.create({
     // Invalid data
     email: 'invalid-email'
-  } satisfies CreateUserRequest)
+  } satisfies CreateUserForm)
 } catch (error) {
   if (error instanceof z.ZodError) {
     // Type-safe validation errors

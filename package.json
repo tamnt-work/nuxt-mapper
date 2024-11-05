@@ -1,6 +1,6 @@
 {
   "name": "@tamnt-work/nuxt-mapper",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Data mapper and converter between different data formats from backend to frontend use schema for nuxt 3",
   "repository": "tamnt-work/nuxt-mapper",
   "license": "MIT",
