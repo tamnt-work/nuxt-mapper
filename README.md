@@ -7,7 +7,7 @@ Find and replace all on all files (CMD+SHIFT+F):
 - Description: My new Nuxt module
 -->
 
-# @tamnt-work/nuxt-mapper
+# nuxt-mapper
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -31,10 +31,10 @@ A powerful data mapper and converter module for Nuxt 3 that helps you transform 
 
 ```bash
 # Using package manager of choice
-pnpm add @tamnt-work/nuxt-mapper
-yarn add @tamnt-work/nuxt-mapper
-npm install @tamnt-work/nuxt-mapper
-bun add @tamnt-work/nuxt-mapper
+pnpm add nuxt-mapper
+yarn add nuxt-mapper
+npm install nuxt-mapper
+bun add nuxt-mapper
 
 # Optional: Install zod if using form validation
 pnpm add zod
@@ -49,7 +49,7 @@ Add to your `nuxt.config.ts`:
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@tamnt-work/nuxt-mapper'],
+  modules: ['nuxt-mapper'],
   // Add services directory to auto-imports
   imports: {
     dirs: ['services']
@@ -390,11 +390,11 @@ npm run release
 [MIT License](./LICENSE)
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/@tamnt-work/nuxt-mapper/latest.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-version-href]: https://npmjs.com/package/@tamnt-work/nuxt-mapper
-[npm-downloads-src]: https://img.shields.io/npm/dm/@tamnt-work/nuxt-mapper.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npmjs.com/package/@tamnt-work/nuxt-mapper
-[license-src]: https://img.shields.io/npm/l/@tamnt-work/nuxt-mapper.svg?style=flat&colorA=020420&colorB=00DC82
-[license-href]: https://npmjs.com/package/@tamnt-work/nuxt-mapper
+[npm-version-src]: https://img.shields.io/npm/v/nuxt-mapper/latest.svg?style=flat&colorA=020420&colorB=00DC82
+[npm-version-href]: https://npmjs.com/package/nuxt-mapper
+[npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-mapper.svg?style=flat&colorA=020420&colorB=00DC82
+[npm-downloads-href]: https://npmjs.com/package/nuxt-mapper
+[license-src]: https://img.shields.io/npm/l/nuxt-mapper.svg?style=flat&colorA=020420&colorB=00DC82
+[license-href]: https://npmjs.com/package/nuxt-mapper
 [nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt.js
 [nuxt-href]: https://nuxt.com
