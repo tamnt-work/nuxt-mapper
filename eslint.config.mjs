@@ -15,11 +15,11 @@ export default createConfigForNuxt({
     ],
   },
 })
-  .append(
-    // your custom flat config here...
-  )
   .append({
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      'vue/multi-word-component-names': 'off',
+      'vue/no-v-html': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
     },
   })

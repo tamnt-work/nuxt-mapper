@@ -9,5 +9,8 @@
   },
   "dependencies": {
     "nuxt": "^3.13.2"
+  },
+  "bin": {
+    "tw": "./node_modules/nuxt-mapper/dist/tw.mjs"
   }
 }

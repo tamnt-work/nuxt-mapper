@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url)
 const getTemplatePath = (templateName: string) => {
   return process.env.NODE_ENV === 'development'
     ? join(process.cwd(), `dist/templates/${templateName}.template`)
-    : require.resolve(`@tamnt-work/nuxt-mapper/dist/templates/${templateName}.template`)
+    : require.resolve(`nuxt-mapper/dist/templates/${templateName}.template`)
 }
 
 const generateFile = (templatePath: string, outputPath: string, replacements?: Record<string, string>) => {
