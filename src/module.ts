@@ -67,27 +67,24 @@ export default defineNuxtModule<ModuleOptions>({
       }
     })
 
-    // Watch for schema files in development mode
-    if (nuxt.options.dev && options.watch) {
-      const port = nuxt.options.devServer.port
-      console.log(`  ➜ \x1B[36mData Mapper Admin:\x1B[0m \x1B[32mhttp://localhost:${port}${options.adminPath}\x1B[0m`)
-
-      consola.info('Base schemas directory:', schemasPath)
-      setupSchemaWatcher({
-        mappersDir,
-        schemaPath: schemasPath,
-        fixEslint: options.fixEslint,
-      })
-
-      setupFormsWatcher({
-        mappersDir,
-        formsPath,
-        fixEslint: options.fixEslint,
-      })
-    }
-
     // Add admin page only in development mode
     if (nuxt.options.dev) {
+      // Watch for schema files in development mode
+      if (options.watch) {
+        consola.info('Base schemas directory:', schemasPath)
+        setupSchemaWatcher({
+          mappersDir,
+          schemaPath: schemasPath,
+          fixEslint: options.fixEslint,
+        })
+
+        setupFormsWatcher({
+          mappersDir,
+          formsPath,
+          fixEslint: options.fixEslint,
+        })
+      }
+
       // Register the admin page component
       addComponent({
         name: 'DataMapperAdmin',
@@ -120,6 +117,9 @@ export default defineNuxtModule<ModuleOptions>({
           file: resolve('./runtime/pages/_data-mapper/schema-visualize/index.vue'),
         })
       })
+
+      const port = nuxt.options.devServer.port
+      console.log(`  ➜ \x1B[36mData Mapper Admin:\x1B[0m \x1B[32mhttp://localhost:${port}${options.adminPath}/schema-visualize\x1B[0m`)
     }
 
     // Add this to the module setup function before adding handlers
