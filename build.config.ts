@@ -9,6 +9,7 @@ export default defineBuildConfig({
   ],
   clean: true,
   declaration: true,
+  failOnWarn: false,
   rollup: {
     emitCJS: true,
     esbuild: {
