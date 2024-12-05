@@ -1,6 +1,6 @@
 {
   "name": "nuxt-mapper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Data mapper and converter between different data formats from backend to frontend use schema for nuxt 3",
   "repository": "tamnt-work/nuxt-mapper",
   "license": "MIT",
@@ -37,12 +37,12 @@
   },
   "scripts": {
     "prepack": "npm run build:module && npm run build:cli && npm run post:build",
-    "build:module": "nuxt-module-build build --stub && nuxt-module-build prepare",
+    "build:module": "nuxt-module-build build && nuxt-module-build prepare",
     "build:cli": "tsup --clean=false",
     "post:build": "node scripts/prepare-dist.js && node scripts/add-shebang.js && node scripts/copy-templates.js",
     "dev": "tsup src/module.ts src/bin/tw.ts --format cjs,esm --dts --watch --clean=false --assets",
     "dev:build": "nuxi build playground",
-    "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare",
+    "dev:prepare": "nuxt-module-build build && nuxt-module-build prepare",
     "release": "npm run lint && npm run test && npm run prepack && npm publish",
     "lint": "eslint .",
     "test": "vitest run",
